@@ -100,36 +100,38 @@ function DialogView({ req, onClose }: { req: Request; onClose: (value: string | 
         onClick={(e) => e.stopPropagation()}
         style={{ width: 'min(420px, calc(100vw - 32px))' }}
       >
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            submit()
-          }}
-        >
-          <div className="mb-3 text-sm">{req.message}</div>
-          {req.kind === 'prompt' && (
-            <Input
-              autoFocus
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              className="mb-3 w-full"
-            />
-          )}
-          <div className="flex justify-end gap-2">
-            <Btn type="button" onClick={() => onClose(null)}>
-              Cancel
-            </Btn>
-            <Btn
-              type="submit"
-              primary={!req.danger}
-              danger={req.danger}
-              disabled={blocked}
-              autoFocus={req.kind === 'confirm'}
-            >
-              {req.confirmLabel ?? 'OK'}
-            </Btn>
-          </div>
-        </form>
+        {/* No <form>: the sandbox also lacks allow-forms, which blocks submit
+            events, so Enter is handled on the input directly. */}
+        <div className="mb-3 text-sm">{req.message}</div>
+        {req.kind === 'prompt' && (
+          <Input
+            autoFocus
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault()
+                submit()
+              }
+            }}
+            className="mb-3 w-full"
+          />
+        )}
+        <div className="flex justify-end gap-2">
+          <Btn type="button" onClick={() => onClose(null)}>
+            Cancel
+          </Btn>
+          <Btn
+            type="button"
+            primary={!req.danger}
+            danger={req.danger}
+            disabled={blocked}
+            autoFocus={req.kind === 'confirm'}
+            onClick={submit}
+          >
+            {req.confirmLabel ?? 'OK'}
+          </Btn>
+        </div>
       </Card>
     </div>
   )
